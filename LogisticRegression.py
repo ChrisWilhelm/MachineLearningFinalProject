@@ -1,6 +1,9 @@
 #Logistic Regression Model. 10-fold Cross Validation
 
-import scipy
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import KFold
 import numpy as np
 import pandas as pd
 
@@ -17,8 +20,17 @@ def read_data():
 
 def logistic_regression(dataset):
     np_dataset = dataset.to_numpy()
-    print(np_dataset)
-
+    num_col = np.shape(np_dataset)[1]
+    X = np_dataset[:, :num_col - 1]
+    y = np_dataset[:, num_col - 1]
+    num_folds = KFold(n_splits=10, shuffle=True, random_state=553)
+    lr_model = LogisticRegression(penalty='l2')
+    score = cross_val_score(lr_model, X, y, cv=num_folds).mean()
+    return score
 
 demographic_biomarker_data, biomarker_data, replicated_biomarker_data = read_data()
-logistic_regression(biomarker_data)
+biomarker_score = logistic_regression(biomarker_data)
+replicated_score = logistic_regression(replicated_biomarker_data)
+demographic_biomarker_data_score = logistic_regression(demographic_biomarker_data)
+
+print(biomarker_score, replicated_score, demographic_biomarker_data_score)

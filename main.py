@@ -25,3 +25,5 @@ def visualize_data(df):
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     demographic_biomarker_data, biomarker_data, replicated_biomarker_data = read_data()
+    print(demographic_biomarker_data.describe())
+    print(biomarker_data.describe())

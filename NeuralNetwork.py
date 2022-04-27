@@ -37,7 +37,7 @@ class BestModel(torch.nn.Module):
         return x
 
 
-def run_network(dataset, epochs=4000, learning_rate=200, batch_size=.001):
+def run_network(dataset, epochs=4000, batch_size=200, learning_rate=.001):
     # scaling data and splitting into train/dev/test
     dataset = dataset.to_numpy()
     sc = StandardScaler()
@@ -55,32 +55,8 @@ def run_network(dataset, epochs=4000, learning_rate=200, batch_size=.001):
     model = BestModel(input_shape, hidden_layer)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-    # training model
-    losses = []
-    accuracy = []
-    for i in range(epochs):
-        for j, (x_train, y_train) in enumerate(trainloader):
-            # calculate output
-            output = model(x_train)
-
-            # calculate loss
-            loss = loss_fn(output, y_train.reshape(-1, 1))
-
-            # accuracy
-            predicted = model(torch.tensor(x, dtype=torch.float32))
-            acc = (predicted.reshape(-1).detach().numpy().round() == y).mean()
-            # backprop
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-
-        if i % 50 == 0:
-            losses.append(loss)
-            accur.append(acc)
-            print("epoch {}\tloss : {}\t accuracy : {}".format(i, loss, acc))
-    """
     for step in range(epochs):  # LR: 0.001, bs: 200, epochs: 4000
-        i = np.random.choice(input_shape, size=batch_size, replace=False)
+        i = np.random.choice(X_train.shape[0], size=batch_size, replace=False)
         x = torch.from_numpy(X_train[i].astype(np.float32))
         y = torch.from_numpy(y_train[i].astype(np.int))
         # Forward pass: Get logits for x
@@ -95,7 +71,7 @@ def run_network(dataset, epochs=4000, learning_rate=200, batch_size=.001):
         # log model performance every 100 epochs
         if step % 100 == 0:
             train_acc, train_loss = approx_train_acc_and_loss(model, X_train, y_train)
-            dev_acc, dev_loss = dev_acc_and_loss(model, X_dev, y_dev)
+            dev_acc, dev_loss = dev_acc_and_loss(model, X_test, y_test)
             step_metrics = {
                 'step': step,
                 'train_loss': loss.item(),
@@ -104,7 +80,6 @@ def run_network(dataset, epochs=4000, learning_rate=200, batch_size=.001):
                 'dev_acc': dev_acc
             }
             print(f"On step {step}:\tTrain loss {train_loss}\t|\tDev acc is {dev_acc}")
-    """
     model_savepath = os.path.join(MODEL_SAVE_DIR, "bestmodel.pt")
     print("Training completed, saving model at {model_savepath}")
     torch.save(model, model_savepath)

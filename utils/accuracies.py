@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-import torch.nn.functional as F
+import torch.nn as F
 
 
 def accuracy(y : np.ndarray, y_hat : np.ndarray) -> np.float64:
@@ -35,11 +35,11 @@ def approx_train_acc_and_loss(model, train_data : np.ndarray, train_labels : np.
     Returns:
         np.float64: simple accuracy
     """
-    idxs = np.random.choice(len(train_data), 4000, replace=False)
+    idxs = np.random.choice(len(train_data), 200, replace=False)
     x = torch.from_numpy(train_data[idxs].astype(np.float32))
     y = torch.from_numpy(train_labels[idxs].astype(np.int))
     logits = model(x)
-    loss = F.cross_entropy(logits, y)
+    loss = F.BCEWithLogitsLoss()(logits, y[:, None].float())
     y_pred = torch.max(logits, 1)[1]
     return accuracy(train_labels[idxs], y_pred.numpy()), loss.item()
 
@@ -60,6 +60,6 @@ def dev_acc_and_loss(model, dev_data : np.ndarray, dev_labels : np.ndarray) -> n
     x = torch.from_numpy(dev_data.astype(np.float32))
     y = torch.from_numpy(dev_labels.astype(np.int))
     logits = model(x)
-    loss = F.cross_entropy(logits, y)
+    loss = F.BCEWithLogitsLoss()(logits, y[:, None].float())
     y_pred = torch.max(logits, 1)[1]
     return accuracy(dev_labels, y_pred.numpy()), loss.item()

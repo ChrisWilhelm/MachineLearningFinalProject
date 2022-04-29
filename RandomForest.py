@@ -72,7 +72,7 @@ def modeling(data):
             best_model = model
             best_model_acc = acc
         results.append(acc)
-    return best_model
+    return best_model, best_model_acc
 
 
 def main():
@@ -95,14 +95,17 @@ def main():
     y_rep = rep[:, num_col - 1]
     X_rep_test = X_rep[:-100]
     y_rep_test = y_rep[:-100]
-    dem_model = modeling(dem_bio_data)
-    bio_model = modeling(biomarker_data)
-    replicated_model = modeling(replicated_biomarker_data)
+    dem_model, dem_acc = modeling(dem_bio_data)
+    bio_model, bio_acc = modeling(biomarker_data)
+    replicated_model, rep_acc = modeling(replicated_biomarker_data)
     Y_pred = dem_model.predict(X_dem_bio_test)
+    print(dem_acc)
     print(accuracy_score(y_dem_bio_test, Y_pred))
     Y_pred = bio_model.predict(X_bio_test)
+    print(bio_acc)
     print(accuracy_score(y_bio_test, Y_pred))
     Y_pred = replicated_model.predict(X_rep_test)
+    print(rep_acc)
     print(accuracy_score(y_rep_test, Y_pred))
     # print(dem_res)
     # print(bio_res)

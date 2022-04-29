@@ -31,7 +31,7 @@ class RandomForest():
 def modeling(data):
     np_dataset = data.to_numpy()
     num_col = np.shape(np_dataset)[1]
-    num_rows = np.shape(np_dataset)[0] - 100
+    num_rows = np.shape(np_dataset)[0] - 600
     X = np_dataset[:num_rows, :num_col - 1]
     y = np_dataset[:num_rows, num_col - 1]
     num_folds = KFold(n_splits=10, shuffle=True, random_state=553)
@@ -74,6 +74,24 @@ def modeling(data):
         results.append(acc)
     return best_model, best_model_acc
 
+def accuracy(y, y_hat):
+    specificity = 0
+    total_spec = 0
+    sensitivity = 0
+    total_sens = 0
+    if y.shape == y_hat.shape:
+        for i in range(y.shape[0]):
+            if y[i] == 0:
+                total_spec += 1
+                if y_hat[i] == y[i]:
+                    specificity += 1
+            else:
+                total_sens += 1
+                if y_hat[i] == y[i]:
+                    sensitivity += 1
+    print("Specificity: ", specificity/total_spec, ", n = ", total_spec)
+    print("Sensitivity: ", sensitivity/total_sens, ", n = ", total_sens)
+
 
 def main():
     dem_bio_data, biomarker_data, replicated_biomarker_data = read_data()
@@ -81,32 +99,35 @@ def main():
     num_col = np.shape(dem_bio)[1]
     X_dem_bio = dem_bio[:, :num_col - 1]
     y_dem_bio = dem_bio[:, num_col - 1]
-    X_dem_bio_test = X_dem_bio[:-100]
-    y_dem_bio_test = y_dem_bio[:-100]
+    X_dem_bio_test = X_dem_bio[:-600]
+    y_dem_bio_test = y_dem_bio[:-600]
     bio = biomarker_data.to_numpy()
     num_col = np.shape(bio)[1]
     X_bio = bio[:, :num_col - 1]
     y_bio = bio[:, num_col - 1]
-    X_bio_test = X_bio[:-100]
-    y_bio_test = y_bio[:-100]
+    X_bio_test = X_bio[:-600]
+    y_bio_test = y_bio[:-600]
     rep = replicated_biomarker_data.to_numpy()
     num_col = np.shape(rep)[1]
     X_rep = rep[:, :num_col - 1]
     y_rep = rep[:, num_col - 1]
-    X_rep_test = X_rep[:-100]
-    y_rep_test = y_rep[:-100]
+    X_rep_test = X_rep[:-600]
+    y_rep_test = y_rep[:-600]
     dem_model, dem_acc = modeling(dem_bio_data)
     bio_model, bio_acc = modeling(biomarker_data)
     replicated_model, rep_acc = modeling(replicated_biomarker_data)
     Y_pred = dem_model.predict(X_dem_bio_test)
     print(dem_acc)
     print(accuracy_score(y_dem_bio_test, Y_pred))
+    accuracy(y_dem_bio_test, Y_pred)
     Y_pred = bio_model.predict(X_bio_test)
     print(bio_acc)
     print(accuracy_score(y_bio_test, Y_pred))
+    accuracy(y_bio_test, Y_pred)
     Y_pred = replicated_model.predict(X_rep_test)
     print(rep_acc)
     print(accuracy_score(y_rep_test, Y_pred))
+    accuracy(y_rep_test, Y_pred)
     # print(dem_res)
     # print(bio_res)
     # print(replicated_res)

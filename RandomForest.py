@@ -6,12 +6,13 @@ This file is where you will write all of your code!
 
 import numpy as np
 import pandas as pd
-
+import os
 from ReadData import read_data
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import KFold
 from sklearn.metrics import accuracy_score
+from sklearn.tree import export_graphviz
 
 
 class RandomForest():
@@ -79,6 +80,7 @@ def accuracy(y, y_hat):
     total_spec = 0
     sensitivity = 0
     total_sens = 0
+    falsePos = list()
     if y.shape == y_hat.shape:
         for i in range(y.shape[0]):
             if y[i] == 0:
@@ -89,8 +91,11 @@ def accuracy(y, y_hat):
                 total_sens += 1
                 if y_hat[i] == y[i]:
                     sensitivity += 1
+                else:
+                    falsePos.append(i)
     print("Specificity: ", specificity/total_spec, ", n = ", total_spec)
     print("Sensitivity: ", sensitivity/total_sens, ", n = ", total_sens)
+    print(falsePos)
 
 
 def main():
@@ -99,23 +104,45 @@ def main():
     num_col = np.shape(dem_bio)[1]
     X_dem_bio = dem_bio[:, :num_col - 1]
     y_dem_bio = dem_bio[:, num_col - 1]
-    X_dem_bio_test = X_dem_bio[:-100]
-    y_dem_bio_test = y_dem_bio[:-100]
+    X_dem_bio_test = X_dem_bio[-100:]
+    y_dem_bio_test = y_dem_bio[-100:]
     bio = biomarker_data.to_numpy()
     num_col = np.shape(bio)[1]
     X_bio = bio[:, :num_col - 1]
     y_bio = bio[:, num_col - 1]
-    X_bio_test = X_bio[:-100]
-    y_bio_test = y_bio[:-100]
+    X_bio_test = X_bio[-100:]
+    y_bio_test = y_bio[-100:]
     rep = replicated_biomarker_data.to_numpy()
     num_col = np.shape(rep)[1]
     X_rep = rep[:, :num_col - 1]
     y_rep = rep[:, num_col - 1]
-    X_rep_test = X_rep[:-100]
-    y_rep_test = y_rep[:-100]
+    X_rep_test = X_rep[-100:]
+    y_rep_test = y_rep[-100:]
+    print(np.shape(y_dem_bio_test))
     dem_model, dem_acc = modeling(dem_bio_data)
+    for i in range(len(dem_model.classifier.estimators_)):
+        dem_model_tree = export_graphviz(dem_model.classifier.estimators_[i], out_file='dem_tree.dot',
+                                         feature_names=dem_bio_data.columns.to_numpy()[:np.shape(dem_bio)[1] - 1],
+                                         class_names=['0', '1'],
+                                         rounded=True, proportion=False,
+                                         precision=2, filled=True)
+        os.system('dot -Tpng .\\dem_tree.dot -o  dem_tree' + str(i) + '.png')
     bio_model, bio_acc = modeling(biomarker_data)
+    for i in range(len(bio_model.classifier.estimators_)):
+        dem_model_tree = export_graphviz(bio_model.classifier.estimators_[i], out_file='tree.dot',
+                                         feature_names=biomarker_data.columns.to_numpy()[:np.shape(bio)[1] - 1],
+                                         class_names=['0', '1'],
+                                         rounded=True, proportion=False,
+                                         precision=2, filled=True)
+        os.system('dot -Tpng .\\tree.dot -o  bio_tree' + str(i) + '.png')
     replicated_model, rep_acc = modeling(replicated_biomarker_data)
+    for i in range(len(replicated_model.classifier.estimators_)):
+        dem_model_tree = export_graphviz(replicated_model.classifier.estimators_[i], out_file='tree.dot',
+                                         feature_names=replicated_biomarker_data.columns.to_numpy()[:np.shape(rep)[1] - 1],
+                                         class_names=['0', '1'],
+                                         rounded=True, proportion=False,
+                                         precision=2, filled=True)
+        os.system('dot -Tpng .\\tree.dot -o  replicated_tree' + str(i) + '.png')
     Y_pred = dem_model.predict(X_dem_bio_test)
     print(dem_acc)
     print(accuracy_score(y_dem_bio_test, Y_pred))

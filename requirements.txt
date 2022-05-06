@@ -17,3 +17,5 @@ fonttools~=4.33.3
 pyparsing~=3.0.8
 packaging~=21.3
 kiwisolver~=1.4.2
+jupyter
+scikit-plot

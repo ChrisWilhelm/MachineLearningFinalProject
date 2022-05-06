@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 
 # splits the dataset into
@@ -41,3 +43,10 @@ def acc_spec_sens(y_hat, y):
 	sensitivity =     np.count_nonzero(y_plus_y_hat == 2.0) / y_non_zero
 
 	return accuracy, specificity, sensitivity
+
+
+def visualize_data(df):
+    sns.heatmap(df.corr(),
+                xticklabels=df.corr().columns.values,
+                yticklabels=df.corr().columns.values)
+    plt.show()

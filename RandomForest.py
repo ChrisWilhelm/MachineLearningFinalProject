@@ -126,7 +126,7 @@ def main():
                                          class_names=['0', '1'],
                                          rounded=True, proportion=False,
                                          precision=2, filled=True)
-        os.system('dot -Tpng .\\dem_tree.dot -o  dem_tree' + str(i) + '.png')
+        os.system('dot -Tpng .\\dem_tree.dot -o  .\\RandomForestVisual\\BioAndDemo\\dem_tree' + str(i) + '.png')
     bio_model, bio_acc = modeling(biomarker_data)
     for i in range(len(bio_model.classifier.estimators_)):
         dem_model_tree = export_graphviz(bio_model.classifier.estimators_[i], out_file='tree.dot',
@@ -134,7 +134,7 @@ def main():
                                          class_names=['0', '1'],
                                          rounded=True, proportion=False,
                                          precision=2, filled=True)
-        os.system('dot -Tpng .\\tree.dot -o  bio_tree' + str(i) + '.png')
+        os.system('dot -Tpng .\\tree.dot -o  .\\RandomForestVisual\\Bio\\bio_tree' + str(i) + '.png')
     replicated_model, rep_acc = modeling(replicated_biomarker_data)
     for i in range(len(replicated_model.classifier.estimators_)):
         dem_model_tree = export_graphviz(replicated_model.classifier.estimators_[i], out_file='tree.dot',
@@ -142,7 +142,7 @@ def main():
                                          class_names=['0', '1'],
                                          rounded=True, proportion=False,
                                          precision=2, filled=True)
-        os.system('dot -Tpng .\\tree.dot -o  replicated_tree' + str(i) + '.png')
+        os.system('dot -Tpng .\\tree.dot -o  .\\RandomForestVisual\\Replicated\\replicated_tree' + str(i) + '.png')
     Y_pred = dem_model.predict(X_dem_bio_test)
     print(dem_acc)
     print(accuracy_score(y_dem_bio_test, Y_pred))

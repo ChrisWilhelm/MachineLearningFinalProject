@@ -5,7 +5,6 @@ def read_data():
     sample_data = pd.read_csv('dataset/Consolidated_CancerSEEK_Data.csv')
     sample_data = sample_data.drop(["Patient ID #", "Sample ID #", "Tumor type", "Race", "AJCC Stage"], axis=1)
     demographic_biomarker_data = sample_data.drop(["CancerSEEK Logistic Regression Score", "CancerSEEK Test Result"], axis=1)
-    demographic_biomarker_data = demographic_biomarker_data.drop(["Ω score"], axis=1)
     biomarker_data = demographic_biomarker_data.drop(["Age", "Sex"], axis=1)
     replicated_biomarker_data = sample_data[
         ["Ω score", "CA-125 (U/ml)", "CA19-9 (U/ml)", "CEA (pg/ml)", "HGF (pg/ml)",

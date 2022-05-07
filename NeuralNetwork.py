@@ -92,13 +92,23 @@ def run_network(dataset, learning_rate, epochs, hidden_layer, dataset_type):
 	# predictions
 	output = predict(model, X_dev)
 	roc_auc_score = utils.plot_roc(output, y_dev, 'Neural Net', dataset_type, './graphs/nn_roc')
-	print(roc_auc_score)
-
+	print("Dataset: ", dataset_type)
+	print("ROC, AUC score: ", roc_auc_score)
 	y_hat = np.rint(output)
+	"""
+	y_hat = []
+	cutoff = .5
+	for i in range(len(output)):
+		if output[i] >= cutoff:
+			y_hat.append(1)
+		else:
+			y_hat.append(0)
+	y_hat = np.array(y_hat)
+	"""
 
 	accuracy, specificity, sensitivity = utils.acc_spec_sens(y_hat, y_dev)
+	print("Accuracy = ", accuracy, ", Specificity = ", specificity, ", Sensitivity = ", sensitivity)
 
-	print(accuracy, specificity, sensitivity)
 
 if __name__ == "__main__":
 	EPOCHS = 100

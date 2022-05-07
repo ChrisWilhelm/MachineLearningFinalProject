@@ -1,11 +1,10 @@
-import matplotlib
 import torch
 import torch.nn as nn
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import roc_curve
+from sklearn.metrics import roc_auc_score
 from torch.autograd import Variable
 import torch.optim as optim
-import pandas as pd
 import numpy as np
 
 import utils
@@ -36,10 +35,7 @@ def predict(model, data):
 	for n in range(np.shape(data)[0]):
 		x = torch.from_numpy(data[n].astype(np.float32))
 		output = model(x).detach().numpy()
-		classification = 0
-		if(output == 1):
-			classification = 1
-		preds.append(classification)
+		preds.append(output[0])
 	return np.array(preds)
 
 
@@ -72,7 +68,7 @@ def train_epoch(model, opt, criterion, X, Y, epochs=4000, batch_size=50):
 	return model
 
 
-def run_network(dataset, learning_rate, epochs, hidden_layer):
+def run_network(dataset, learning_rate, epochs, hidden_layer, dataset_type):
 	X_train, X_dev, X_test, y_train, y_dev, _ = dataset
 	sc = StandardScaler()
 
@@ -94,15 +90,21 @@ def run_network(dataset, learning_rate, epochs, hidden_layer):
 	model = train_epoch(net, opt, criterion, X_train, y_train, epochs)
 
 	# predictions
-	y_hat = predict(model, X_dev)
+	output = predict(model, X_dev)
+	roc_auc_score = utils.plot_roc(output, y_dev, 'Neural Net', dataset_type, './graphs/nn_roc')
+	print(roc_auc_score)
+
+	y_hat = np.rint(output)
 
 	accuracy, specificity, sensitivity = utils.acc_spec_sens(y_hat, y_dev)
 
 	print(accuracy, specificity, sensitivity)
 
 if __name__ == "__main__":
-	EPOCHS = 400
+	EPOCHS = 100
 	LR = .005
 	NUM_HIDDEN_LAYERS = 100
-	_, biomarker_data, _ = utils.read_data()
-	run_network(biomarker_data, LR, EPOCHS, NUM_HIDDEN_LAYERS)
+	demographic_biomarker_data, biomarker_data, replicated_biomarker_data = utils.read_data()
+	run_network(demographic_biomarker_data, LR, EPOCHS, NUM_HIDDEN_LAYERS, 'Demographic Biomarker')
+	run_network(biomarker_data, LR, EPOCHS, NUM_HIDDEN_LAYERS, 'Biomarker')
+	run_network(replicated_biomarker_data, LR, EPOCHS, NUM_HIDDEN_LAYERS, 'Replicated')

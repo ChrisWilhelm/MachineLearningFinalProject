@@ -55,8 +55,6 @@ def visualize_data(df):
 
 # plots the roc curve and returns the roc auc score
 def plot_roc(y_pred_probs, y_actual, model_type, dataset_type, fname):
-	y_pred_probs = y_pred_probs[:, 1]
-
 	y_pred_fpr, y_pred_tpr, _ = roc_curve(y_actual, y_pred_probs)
 	plt.plot(y_pred_fpr, y_pred_tpr, label=dataset_type)
 	plt.title(model_type + ' ROC Curve')
@@ -64,4 +62,5 @@ def plot_roc(y_pred_probs, y_actual, model_type, dataset_type, fname):
 	plt.ylabel('True Positive Rate')
 	plt.legend()
 	plt.savefig(fname)
+	
 	return roc_auc_score(y_actual, y_pred_probs)

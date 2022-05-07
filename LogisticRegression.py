@@ -17,7 +17,8 @@ def logistic_regression(dataset, dataset_type):
 	lr_model.fit(X_train, y_train)
 
 	y_pred_probs = lr_model.predict_proba(X_dev)
-	roc_auc_score = utils.plot_roc(y_pred_probs, y_dev, 'Logistic Regression', dataset_type, './graphs/lr_roc')
+	roc_auc_score = utils.plot_roc(y_pred_probs[:, 1], y_dev, 'Logistic Regression', dataset_type, './graphs/lr_roc')
+	print(roc_auc_score)
 
 	y_pred = np.argmax(y_pred_probs, axis=1)
 	accuracy, specificity, sensitivity = utils.acc_spec_sens(y_pred, y_dev)

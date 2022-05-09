@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 import matplotlib
-=======
->>>>>>> 60b32fbb5bccb77b3430e928a5612708f2cdbdc3
 import torch
 import torch.nn as nn
 from sklearn.preprocessing import StandardScaler

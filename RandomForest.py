@@ -146,53 +146,72 @@ def printTree(X_test, model):
             )
 
 def main():
-    dem_bio_data, biomarker_data, replicated_biomarker_data = read_data()
-    dem_bio = dem_bio_data.to_numpy()
-    num_col = np.shape(dem_bio)[1]
-    X_dem_bio = dem_bio[:, :num_col - 1]
-    y_dem_bio = dem_bio[:, num_col - 1]
-    X_dem_bio_test = X_dem_bio[-100:]
-    y_dem_bio_test = y_dem_bio[-100:]
-    bio = biomarker_data.to_numpy()
-    num_col = np.shape(bio)[1]
-    X_bio = bio[:, :num_col - 1]
-    y_bio = bio[:, num_col - 1]
-    X_bio_test = X_bio[-100:]
-    y_bio_test = y_bio[-100:]
-    rep = replicated_biomarker_data.to_numpy()
-    num_col = np.shape(rep)[1]
-    X_rep = rep[:, :num_col - 1]
-    y_rep = rep[:, num_col - 1]
-    X_rep_test = X_rep[-100:]
-    y_rep_test = y_rep[-100:]
-    print(np.shape(y_dem_bio_test))
-    dem_model, dem_acc = modeling(dem_bio_data)
-    createTreePNG(dem_model, dem_bio_data, dem_bio, 'BioAndDemo', 'dem_tree')
-    Y_pred = dem_model.predict(X_dem_bio_test)
-    print(dem_acc)
-    print(accuracy_score(y_dem_bio_test, Y_pred))
-    dem_false_pos = accuracy(y_dem_bio_test, Y_pred)
-    for val in dem_false_pos:
-        print(val)
-        printTree(X_dem_bio_test[val], dem_model.classifier)
-    bio_model, bio_acc = modeling(biomarker_data)
-    createTreePNG(bio_model, biomarker_data, bio, 'Bio', 'bio_tree')
-    Y_pred = bio_model.predict(X_bio_test)
-    print(bio_acc)
-    print(accuracy_score(y_bio_test, Y_pred))
-    bio_false_positive = accuracy(y_bio_test, Y_pred)
-    for val in bio_false_positive:
-        print(val)
-        printTree(X_bio_test[val], bio_model.classifier)
-    replicated_model, rep_acc = modeling(replicated_biomarker_data)
-    createTreePNG(replicated_model, replicated_biomarker_data, rep, 'Replicated', 'replicated_tree')
-    Y_pred = replicated_model.predict(X_rep_test)
-    print(rep_acc)
-    print(accuracy_score(y_rep_test, Y_pred))
-    rep_false_positive = accuracy(y_rep_test, Y_pred)
-    for val in rep_false_positive:
-        print(val)
-        printTree(X_rep_test[val], replicated_model.classifier)
+    data = list(read_data())
+    dem_bio_data, biomarker_data, replicated_biomarker_data, colorectum_data = read_data()
+    folders = list(['BioAndDemo', 'Bio', 'Replicated', 'Colorectum'])
+    titles = list(['dem_tree', 'bio_tree', 'rep_tree', 'colorectum_tree'])
+    for (data_set, folder, title) in zip(data, folders, titles):
+        data_numpy = data_set.to_numpy()
+        num_col = np.shape(data_numpy)[1]
+        X_dev = data_numpy[:, :num_col - 1]
+        y_dev = data_numpy[:, num_col - 1]
+        X_test = X_dev[-100:]
+        y_test = y_dev[-100:]
+        model, acc = modeling(data_set)
+        createTreePNG(model, data_set, data_numpy, folder, title)
+        Y_pred = model.predict(X_test)
+        print(acc)
+        print(accuracy_score(y_test, Y_pred))
+        false_pos = accuracy(y_test, Y_pred)
+        # for val in false_pos:
+        #     print(val)
+        #     printTree(X_test[val], model.classifier)
+    # dem_bio = dem_bio_data.to_numpy()
+    # num_col = np.shape(dem_bio)[1]
+    # X_dem_bio = dem_bio[:, :num_col - 1]
+    # y_dem_bio = dem_bio[:, num_col - 1]
+    # X_dem_bio_test = X_dem_bio[-100:]
+    # y_dem_bio_test = y_dem_bio[-100:]
+    # bio = biomarker_data.to_numpy()
+    # num_col = np.shape(bio)[1]
+    # X_bio = bio[:, :num_col - 1]
+    # y_bio = bio[:, num_col - 1]
+    # X_bio_test = X_bio[-100:]
+    # y_bio_test = y_bio[-100:]
+    # rep = replicated_biomarker_data.to_numpy()
+    # num_col = np.shape(rep)[1]
+    # X_rep = rep[:, :num_col - 1]
+    # y_rep = rep[:, num_col - 1]
+    # X_rep_test = X_rep[-100:]
+    # y_rep_test = y_rep[-100:]
+    # print(np.shape(y_dem_bio_test))
+    # dem_model, dem_acc = modeling(dem_bio_data)
+    # createTreePNG(dem_model, dem_bio_data, dem_bio, 'BioAndDemo', 'dem_tree')
+    # Y_pred = dem_model.predict(X_dem_bio_test)
+    # print(dem_acc)
+    # print(accuracy_score(y_dem_bio_test, Y_pred))
+    # dem_false_pos = accuracy(y_dem_bio_test, Y_pred)
+    # for val in dem_false_pos:
+    #     print(val)
+    #     printTree(X_dem_bio_test[val], dem_model.classifier)
+    # bio_model, bio_acc = modeling(biomarker_data)
+    # createTreePNG(bio_model, biomarker_data, bio, 'Bio', 'bio_tree')
+    # Y_pred = bio_model.predict(X_bio_test)
+    # print(bio_acc)
+    # print(accuracy_score(y_bio_test, Y_pred))
+    # bio_false_positive = accuracy(y_bio_test, Y_pred)
+    # for val in bio_false_positive:
+    #     print(val)
+    #     printTree(X_bio_test[val], bio_model.classifier)
+    # replicated_model, rep_acc = modeling(replicated_biomarker_data)
+    # createTreePNG(replicated_model, replicated_biomarker_data, rep, 'Replicated', 'replicated_tree')
+    # Y_pred = replicated_model.predict(X_rep_test)
+    # print(rep_acc)
+    # print(accuracy_score(y_rep_test, Y_pred))
+    # rep_false_positive = accuracy(y_rep_test, Y_pred)
+    # for val in rep_false_positive:
+    #     print(val)
+    #     printTree(X_rep_test[val], replicated_model.classifier)
     # print(dem_res)
     # print(bio_res)
     # print(replicated_res)

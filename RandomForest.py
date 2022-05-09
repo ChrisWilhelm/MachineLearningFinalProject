@@ -5,6 +5,7 @@ This file is where you will write all of your code!
 """
 
 import numpy as np
+import utils
 import pandas as pd
 import os
 from ReadData import read_data
@@ -40,7 +41,7 @@ def modeling(data):
     best_model_acc = 0
     results = list()
     for train_x, test_x in num_folds.split(X):
-        print('Next Set:')
+        #print('Next Set:')
         X_train, X_test = X[train_x, :], X[test_x, :]
         Y_train, Y_test = y[train_x], y[test_x]
         numElements = X_train.shape[0]
@@ -48,9 +49,9 @@ def modeling(data):
         model = RandomForest(num_estimators=15, max_depth=5, min_samples_split=2, criterion='entropy')
         for i in range(1, (numElements - numLastIter)//100):
             model.fit(X_train[:i*100], Y_train[:i*100])
-            print('Iteration: ' + str(i) + ' is ' + str(accuracy_score(Y_train[:i*100], model.predict(X_train[:i*100]))))
+            #print('Iteration: ' + str(i) + ' is ' + str(accuracy_score(Y_train[:i*100], model.predict(X_train[:i*100]))))
         model.fit(X_train, Y_train)
-        print('Total Training Accuracy: ' + str(accuracy_score(Y_train, model.predict(X_train))))
+        #print('Total Training Accuracy: ' + str(accuracy_score(Y_train, model.predict(X_train))))
         # best params found n_estimators = 20, max_depth = 15 min_samples_split = 3, criterion='entropy'
         # variables = dict()
         # variables['n_estimators'] = [5, 10, 15, 20]
@@ -68,7 +69,7 @@ def modeling(data):
         model.fit(X_train, Y_train)
         Y_pred = model.predict(X_test)
         acc = accuracy_score(Y_test, Y_pred)
-        print('Test Accuracy for the set: ' + str(acc))
+        #print('Test Accuracy for the set: ' + str(acc))
         if acc > best_model_acc:
             best_model = model
             best_model_acc = acc
@@ -162,6 +163,9 @@ def main():
         Y_pred = model.predict(X_test)
         print(acc)
         print(accuracy_score(y_test, Y_pred))
+        output = model.predict(X_dev)
+        roc_auc_score = utils.plot_roc(output, y_dev, 'Random Forest: ' + folder, folders, './graphs/nn_roc')
+        print("ROC, AUC score: ", roc_auc_score)
         false_pos = accuracy(y_test, Y_pred)
         # for val in false_pos:
         #     print(val)

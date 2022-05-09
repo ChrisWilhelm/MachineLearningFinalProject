@@ -173,7 +173,7 @@ def main():
                                        './graphs/rf_roc')
         print("ROC, AUC score: ", roc_auc_score)
         false_pos = accuracy(y_test, Y_pred)
-        utils.analyze_cancer_type(Y_pred, y_test, patient_Id_arr, 'Random Forest', folder)
+        #utils.analyze_cancer_type(Y_pred, y_test, patient_Id_arr, 'Random Forest', folder)
         # for val in false_pos:
         #     print(val)
         #     printTree(X_test[val], model.classifier)

@@ -148,6 +148,9 @@ def printTree(X_test, model):
 
 def main():
     data = list(read_data())
+    data_with_patientid = pd.read_csv('dataset/Consolidated_CancerSEEK_Data.csv')
+    patientIds = data_with_patientid['Sample ID #']
+    patient_Id_arr = patientIds.to_numpy()[-100:]
     dem_bio_data, biomarker_data, replicated_biomarker_data, colorectum_data = read_data()
     folders = list(['BioAndDemo', 'Bio', 'Replicated', 'Colorectum'])
     titles = list(['dem_tree', 'bio_tree', 'rep_tree', 'colorectum_tree'])
@@ -170,6 +173,7 @@ def main():
                                        './graphs/rf_roc')
         print("ROC, AUC score: ", roc_auc_score)
         false_pos = accuracy(y_test, Y_pred)
+        utils.analyze_cancer_type(Y_pred, y_test, patient_Id_arr, 'Random Forest', folder)
         # for val in false_pos:
         #     print(val)
         #     printTree(X_test[val], model.classifier)

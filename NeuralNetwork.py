@@ -6,7 +6,6 @@ from sklearn.metrics import roc_auc_score
 from torch.autograd import Variable
 import torch.optim as optim
 import numpy as np
-
 import utils
 
 class Net(nn.Module):
@@ -63,13 +62,13 @@ def train_epoch(model, opt, criterion, X, Y, epochs=4000, batch_size=50):
 			# (4) update weights
 			opt.step()
 			losses.append(loss.data.numpy())
-		if i%100 == 0:
-			print("Epoch: ", i, "- ",loss.data.numpy())
+		#if i%100 == 0:
+			#print("Epoch: ", i, "- ",loss.data.numpy())
 	return model
 
 
 def run_network(dataset, learning_rate, epochs, hidden_layer, dataset_type):
-	X_train, X_dev, X_test, y_train, y_dev, _ = dataset
+	X_train, X_dev, X_test, y_train, y_dev, y_test = dataset
 	sc = StandardScaler()
 
 	# briefly combine the Xs so we can run fit_transform on them
@@ -86,35 +85,58 @@ def run_network(dataset, learning_rate, epochs, hidden_layer, dataset_type):
 	net = Net(X_train.shape[1], hidden_layer)
 	opt = optim.Adam(net.parameters(), learning_rate, betas=(0.9, 0.999))
 	criterion = nn.BCELoss()
-	e_losses = []
 	model = train_epoch(net, opt, criterion, X_train, y_train, epochs)
 
 	# predictions
 	output = predict(model, X_dev)
+	y_dev = y_dev.astype(np.float32)
 	roc_auc_score = utils.plot_roc(output, y_dev, 'Neural Net', dataset_type, './graphs/nn_roc')
 	print("Dataset: ", dataset_type)
 	print("ROC, AUC score: ", roc_auc_score)
-	y_hat = np.rint(output)
-	"""
+	y_hat_rint = np.rint(output)
 	y_hat = []
-	cutoff = .5
+	cutoff = .99999
 	for i in range(len(output)):
 		if output[i] >= cutoff:
 			y_hat.append(1)
 		else:
 			y_hat.append(0)
 	y_hat = np.array(y_hat)
-	"""
-
 	accuracy, specificity, sensitivity = utils.acc_spec_sens(y_hat, y_dev)
 	print("Accuracy = ", accuracy, ", Specificity = ", specificity, ", Sensitivity = ", sensitivity)
+	return model, X_test, y_test
+
+def run_testdata(model, X, y, dataset_type):
+	print("TEST DATA: Dataset ", dataset_type)
+	# predictions
+	output = predict(model, X)
+	y_test = y[:, 1].astype(np.float32)
+	sample_ids = y[:, 0]
+	roc_auc_score = utils.plot_roc(output, y_test, 'Neural Net', dataset_type, './graphs/nn_roc')
+	print("ROC, AUC score: ", roc_auc_score)
+	y_hat = []
+	cutoff = .99999
+	for i in range(len(output)):
+		if output[i] >= cutoff:
+			y_hat.append(1)
+		else:
+			y_hat.append(0)
+	y_hat = np.array(y_hat)
+	accuracy, specificity, sensitivity = utils.acc_spec_sens(y_hat, y_test)
+	print("Accuracy = ", accuracy, ", Specificity = ", specificity, ", Sensitivity = ", sensitivity)
+	analyze_cancer_type(y_hat, y_test)
+
 
 
 if __name__ == "__main__":
-	EPOCHS = 100
+	EPOCHS = 400
 	LR = .005
 	NUM_HIDDEN_LAYERS = 100
-	demographic_biomarker_data, biomarker_data, replicated_biomarker_data = utils.read_data()
-	run_network(demographic_biomarker_data, LR, EPOCHS, NUM_HIDDEN_LAYERS, 'Demographic Biomarker')
-	run_network(biomarker_data, LR, EPOCHS, NUM_HIDDEN_LAYERS, 'Biomarker')
-	run_network(replicated_biomarker_data, LR, EPOCHS, NUM_HIDDEN_LAYERS, 'Replicated')
+	demographic_biomarker_data, biomarker_data, replicated_biomarker_data = utils.read_data_cancertype()
+	model, X_test, y_test = run_network(demographic_biomarker_data, LR, EPOCHS, NUM_HIDDEN_LAYERS, 'Demographic Biomarker')
+	run_testdata(model, X_test, y_test, 'Demographic Biomarker')
+	model, X_test, y_test = run_network(biomarker_data, LR, EPOCHS, NUM_HIDDEN_LAYERS, 'Biomarker')
+	run_testdata(model, X_test, y_test, 'Biomarker')
+	model, X_test, y_test = run_network(replicated_biomarker_data, LR, EPOCHS, NUM_HIDDEN_LAYERS, 'Replicated')
+	run_testdata(model, X_test, y_test, 'Replicated')
+

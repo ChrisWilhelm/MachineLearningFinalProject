@@ -46,6 +46,109 @@ def read_data():
            train_test_dev_split(replicated_biomarker_data)
 
 
+def analyze_cancer_type(ypred, ytest, sample_ids):
+    assert len(ypred) == len(ytest) == len(sample_ids)
+    dataset = pd.read_csv('dataset/Consolidated_CancerSEEK_Data.csv')
+    # for each cancer type, there are two arrays for negative and positive classifications for y_hat
+    lung = []
+    colorectum = []
+    esophagus = []
+    breast = []
+    pancreas = []
+    liver = []
+    ovary = []
+    stomach = []
+    normal = []
+    for i in range(len(ypred)):
+        y_hat = ypred[i]
+        y_test = ytest[i]
+        sample_id = sample_ids[i]
+        ct = dataset.loc[dataset['Sample ID #'] == sample_id, 'Tumor type']
+        cancer_type = ct.iloc[0]
+        if cancer_type == 'Colorectum':
+            #true positive classification
+            if y_hat == y_test:
+                colorectum.append(1)
+            #false negative classification
+            else:
+                colorectum.append(0)
+        elif cancer_type == 'Normal':
+            # true negative classification
+            if y_hat == y_test:
+                normal.append(1)
+            # false positive classification
+            else:
+                normal.append(0)
+        elif cancer_type == 'Lung':
+            # true positive classification
+            if y_hat == y_test:
+                lung.append(1)
+            # false negative classification
+            else:
+                lung.append(0)
+        elif cancer_type == 'Breast':
+            # true positive classification
+            if y_hat == y_test:
+                breast.append(1)
+            # false negative classification
+            else:
+                breast.append(0)
+        elif cancer_type == 'Stomach':
+            # true positive classification
+            if y_hat == y_test:
+                stomach.append(1)
+            # false negative classification
+            else:
+                stomach.append(0)
+        elif cancer_type == 'Ovary':
+            # true positive classification
+            if y_hat == y_test:
+                ovary.append(1)
+            # false negative classification
+            else:
+                ovary.append(0)
+        elif cancer_type == 'Liver':
+            # true positive classification
+            if y_hat == y_test:
+                liver.append(1)
+            # false negative classification
+            else:
+                liver.append(0)
+        elif cancer_type == 'Esophagus':
+            # true positive classification
+            if y_hat == y_test:
+                esophagus.append(1)
+            # false negative classification
+            else:
+                esophagus.append(0)
+        elif cancer_type == 'Pancreas':
+            # true positive classification
+            if y_hat == y_test:
+                pancreas.append(1)
+            # false negative classification
+            else:
+                pancreas.append(0)
+        else:
+            print("Erroneous Sample Number")
+    print("Normal")
+    print(normal)
+    print("Colorectum")
+    print(colorectum)
+    print("Stomach")
+    print(stomach)
+    print("Liver")
+    print(liver)
+    print("Esophagus")
+    print(esophagus)
+    print("Ovary")
+    print(ovary)
+    print("Pancreas")
+    print(pancreas)
+    print("Breast")
+    print(breast)
+    print("Lung")
+    print(lung)
+
 
 def train_test_dev_split_cancer(dataset, dev_percentage=0.2):
     assert 0.0 <= dev_percentage <= 1.0

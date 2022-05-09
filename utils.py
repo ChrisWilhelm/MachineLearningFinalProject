@@ -21,7 +21,6 @@ def train_test_dev_split(dataset, dev_percentage=0.2):
     return X_train, X_dev, X_test, y_train, y_dev, y_test
 
 
-
 def read_data():
     sample_data = pd.read_csv('dataset/Consolidated_CancerSEEK_Data.csv')
     cols = ['Patient ID #', 'Age', 'Sex', 'Race', 'Tumor type', 'AJCC Stage', 'Ω score', 'AFP (pg/ml)', \

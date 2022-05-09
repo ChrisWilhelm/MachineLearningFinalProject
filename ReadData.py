@@ -7,6 +7,7 @@ def read_data():
     colorectum_final = colorectum_starter.drop(["Patient ID #", "Sample ID #", "Tumor type", "Race",
                                                 "AJCC Stage", "CancerSEEK Logistic Regression Score",
                                                 "CancerSEEK Test Result"], axis=1)
+    colorectum_final = colorectum_final.sample(frac=1, random_state=553)
     sample_data = sample_data.drop(["Patient ID #", "Sample ID #", "Tumor type", "Race", "AJCC Stage"], axis=1)
     demographic_biomarker_data = sample_data.drop(["CancerSEEK Logistic Regression Score", "CancerSEEK Test Result"], axis=1)
     biomarker_data = demographic_biomarker_data.drop(["Age", "Sex"], axis=1)

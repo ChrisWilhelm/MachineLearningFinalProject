@@ -163,8 +163,11 @@ def main():
         Y_pred = model.predict(X_test)
         print(acc)
         print(accuracy_score(y_test, Y_pred))
-        output = model.predict(X_dev)
-        roc_auc_score = utils.plot_roc(output, y_dev, 'Random Forest: ' + folder, folders, './graphs/nn_roc')
+        X_dev = X_dev[:-100]
+        y_dev = y_dev[:-100]
+        y_pred_probs = model.classifier.predict_proba(X_dev)
+        roc_auc_score = utils.plot_roc(y_pred_probs[:, 1], y_dev, 'Random Forest', folder,
+                                       './graphs/rf_roc')
         print("ROC, AUC score: ", roc_auc_score)
         false_pos = accuracy(y_test, Y_pred)
         # for val in false_pos:

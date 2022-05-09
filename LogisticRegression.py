@@ -1,61 +1,35 @@
 #Logistic Regression Model. 10-fold Cross Validation
 
-
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
 import matplotlib.pyplot as plt
+
 import numpy as np
-import pandas as pd
+import utils
 
-def read_data():
-    sample_data = pd.read_csv('dataset/Consolidated_CancerSEEK_Data.csv')
-    sample_data = sample_data.drop(["Patient ID #", "Sample ID #", "Tumor type", "Race", "AJCC Stage"], axis=1)
-    demographic_biomarker_data = sample_data.drop(["CancerSEEK Logistic Regression Score", "CancerSEEK Test Result"], axis=1)
-    biomarker_data = demographic_biomarker_data.drop(["Age", "Sex"], axis=1)
-    replicated_biomarker_data = biomarker_data[["Ω score", "CA-125 (U/ml)", "CA19-9 (U/ml)", "CEA (pg/ml)", "HGF (pg/ml)",
-                                                "Myeloperoxidase (ng/ml)", "OPN (pg/ml)", "Prolactin (pg/ml)", "TIMP-1 (pg/ml)",
-                                                "Ground Truth"]]
-    return demographic_biomarker_data, biomarker_data, replicated_biomarker_data
+def logistic_regression(dataset, dataset_type):
+	X_train, X_dev, _, y_train, y_dev, _ = dataset
 
-def accuracy(y, y_hat):
-    specificity = 0
-    total_spec = 0
-    sensitivity = 0
-    total_sens = 0
-    if y.shape == y_hat.shape:
-        for i in range(y.shape[0]):
-            if y[i] == 0:
-                total_spec += 1
-                if y_hat[i] == y[i]:
-                    specificity += 1
-            else:
-                total_sens += 1
-                if y_hat[i] == y[i]:
-                    sensitivity += 1
-    print("Specificity: ", specificity/total_spec, ", n = ", total_spec)
-    print("Sensitivity: ", sensitivity/total_sens, ", n = ", total_sens)
+	num_folds = KFold(n_splits=10, shuffle=True)
+	lr_model = LogisticRegression(penalty='l2')
+	cval_score = cross_val_score(lr_model, X_train, y_train, cv=num_folds).mean()
+	lr_model.fit(X_train, y_train)
 
+	y_pred_probs = lr_model.predict_proba(X_dev)
+	roc_auc_score = utils.plot_roc(y_pred_probs[:, 1], y_dev, 'Logistic Regression', dataset_type, './graphs/lr_roc')
+	print(roc_auc_score)
 
-def logistic_regression(dataset):
-    np_dataset = dataset.to_numpy()
-    num_col = np.shape(np_dataset)[1]
-    num_rows = np.shape(np_dataset)[0]
-    X = np_dataset[:num_rows - 100, :num_col - 1]
-    y = np_dataset[:num_rows - 100, num_col - 1]
-    X_test = np_dataset[:-100, :num_col-1]
-    Y_test = np_dataset[:-100, num_col - 1]
-    num_folds = KFold(n_splits=10, shuffle=True, random_state=553)
-    lr_model = LogisticRegression(penalty='l2')
-    score = cross_val_score(lr_model, X, y, cv=num_folds).mean()
-    lr_model.fit(X, y)
-    Y_pred = lr_model.predict(X_test)
-    accuracy(Y_test, Y_pred)
-    return score
+	y_pred = np.argmax(y_pred_probs, axis=1)
+	accuracy, specificity, sensitivity = utils.acc_spec_sens(y_pred, y_dev)
+	return cval_score, accuracy, specificity, sensitivity
 
-demographic_biomarker_data, biomarker_data, replicated_biomarker_data = read_data()
-biomarker_score = logistic_regression(biomarker_data)
-replicated_score = logistic_regression(replicated_biomarker_data)
-demographic_biomarker_data_score = logistic_regression(demographic_biomarker_data)
+if __name__ == "__main__":
+	demographic_biomarker_data, biomarker_data, replicated_biomarker_data = utils.read_data()
+	biomarker_score = logistic_regression(biomarker_data, 'Biomarker')
+	replicated_score = logistic_regression(replicated_biomarker_data, 'Replicated')
+	demographic_biomarker_data_score = logistic_regression(demographic_biomarker_data, 'Demographic Biomarker')
 
-print(biomarker_score, replicated_score, demographic_biomarker_data_score)
+	print(biomarker_score)
+	print(replicated_score)
+	print(demographic_biomarker_data_score)

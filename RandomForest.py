@@ -5,6 +5,7 @@ This file is where you will write all of your code!
 """
 
 import numpy as np
+import utils
 import pandas as pd
 import os
 from ReadData import read_data
@@ -40,7 +41,7 @@ def modeling(data):
     best_model_acc = 0
     results = list()
     for train_x, test_x in num_folds.split(X):
-        print('Next Set:')
+        #print('Next Set:')
         X_train, X_test = X[train_x, :], X[test_x, :]
         Y_train, Y_test = y[train_x], y[test_x]
         numElements = X_train.shape[0]
@@ -48,9 +49,9 @@ def modeling(data):
         model = RandomForest(num_estimators=15, max_depth=5, min_samples_split=2, criterion='entropy')
         for i in range(1, (numElements - numLastIter)//100):
             model.fit(X_train[:i*100], Y_train[:i*100])
-            print('Iteration: ' + str(i) + ' is ' + str(accuracy_score(Y_train[:i*100], model.predict(X_train[:i*100]))))
+            #print('Iteration: ' + str(i) + ' is ' + str(accuracy_score(Y_train[:i*100], model.predict(X_train[:i*100]))))
         model.fit(X_train, Y_train)
-        print('Total Training Accuracy: ' + str(accuracy_score(Y_train, model.predict(X_train))))
+        #print('Total Training Accuracy: ' + str(accuracy_score(Y_train, model.predict(X_train))))
         # best params found n_estimators = 20, max_depth = 15 min_samples_split = 3, criterion='entropy'
         # variables = dict()
         # variables['n_estimators'] = [5, 10, 15, 20]
@@ -68,7 +69,7 @@ def modeling(data):
         model.fit(X_train, Y_train)
         Y_pred = model.predict(X_test)
         acc = accuracy_score(Y_test, Y_pred)
-        print('Test Accuracy for the set: ' + str(acc))
+        #print('Test Accuracy for the set: ' + str(acc))
         if acc > best_model_acc:
             best_model = model
             best_model_acc = acc
@@ -96,65 +97,128 @@ def accuracy(y, y_hat):
     print("Specificity: ", specificity/total_spec, ", n = ", total_spec)
     print("Sensitivity: ", sensitivity/total_sens, ", n = ", total_sens)
     print(falsePos)
+    return falsePos
 
+
+def createTreePNG(model, data, numpy_data, folder, title):
+    for i in range(len(model.classifier.estimators_)):
+        dem_model_tree = export_graphviz(model.classifier.estimators_[i], out_file='dem_tree.dot',
+                                         feature_names=data.columns.to_numpy()[:np.shape(numpy_data)[1] - 1],
+                                         class_names=['0', '1'],
+                                         rounded=True, proportion=False,
+                                         precision=2, filled=True)
+        os.system('dot -Tpng .\\dem_tree.dot -o  .\\RandomForestVisual\\' + folder + '\\' + title + str(i) + '.png')
+
+
+def printTree(X_test, model):
+    X_test = X_test.reshape(1,-1)
+    for tree in model.estimators_:
+        feature = tree.tree_.feature
+        threshold = tree.tree_.threshold
+        sample_id = 0
+        node_indicator = tree.decision_path(X_test)
+        leaf_id = tree.apply(X_test)
+        # obtain ids of the nodes `sample_id` goes through, i.e., row `sample_id`
+        node_index = node_indicator.indices[
+                     node_indicator.indptr[sample_id]: node_indicator.indptr[sample_id + 1]
+                     ]
+        print("Rules used to predict sample {id}:\n".format(id=sample_id))
+        for node_id in node_index:
+            # continue to the next node if it is a leaf node
+            if leaf_id[sample_id] == node_id:
+                continue
+
+            # check if value of the split feature for sample 0 is below threshold
+            if X_test[sample_id, feature[node_id]] <= threshold[node_id]:
+                threshold_sign = "<="
+            else:
+                threshold_sign = ">"
+
+            print(
+                "decision node {node} : (X_test[{sample}, {feature}] = {value}) "
+                "{inequality} {threshold})".format(
+                    node=node_id,
+                    sample=sample_id,
+                    feature=feature[node_id],
+                    value=X_test[sample_id, feature[node_id]],
+                    inequality=threshold_sign,
+                    threshold=threshold[node_id],
+                )
+            )
 
 def main():
-    dem_bio_data, biomarker_data, replicated_biomarker_data = read_data()
-    dem_bio = dem_bio_data.to_numpy()
-    num_col = np.shape(dem_bio)[1]
-    X_dem_bio = dem_bio[:, :num_col - 1]
-    y_dem_bio = dem_bio[:, num_col - 1]
-    X_dem_bio_test = X_dem_bio[-100:]
-    y_dem_bio_test = y_dem_bio[-100:]
-    bio = biomarker_data.to_numpy()
-    num_col = np.shape(bio)[1]
-    X_bio = bio[:, :num_col - 1]
-    y_bio = bio[:, num_col - 1]
-    X_bio_test = X_bio[-100:]
-    y_bio_test = y_bio[-100:]
-    rep = replicated_biomarker_data.to_numpy()
-    num_col = np.shape(rep)[1]
-    X_rep = rep[:, :num_col - 1]
-    y_rep = rep[:, num_col - 1]
-    X_rep_test = X_rep[-100:]
-    y_rep_test = y_rep[-100:]
-    print(np.shape(y_dem_bio_test))
-    dem_model, dem_acc = modeling(dem_bio_data)
-    for i in range(len(dem_model.classifier.estimators_)):
-        dem_model_tree = export_graphviz(dem_model.classifier.estimators_[i], out_file='dem_tree.dot',
-                                         feature_names=dem_bio_data.columns.to_numpy()[:np.shape(dem_bio)[1] - 1],
-                                         class_names=['0', '1'],
-                                         rounded=True, proportion=False,
-                                         precision=2, filled=True)
-        os.system('dot -Tpng .\\dem_tree.dot -o  .\\RandomForestVisual\\BioAndDemo\\dem_tree' + str(i) + '.png')
-    bio_model, bio_acc = modeling(biomarker_data)
-    for i in range(len(bio_model.classifier.estimators_)):
-        dem_model_tree = export_graphviz(bio_model.classifier.estimators_[i], out_file='tree.dot',
-                                         feature_names=biomarker_data.columns.to_numpy()[:np.shape(bio)[1] - 1],
-                                         class_names=['0', '1'],
-                                         rounded=True, proportion=False,
-                                         precision=2, filled=True)
-        os.system('dot -Tpng .\\tree.dot -o  .\\RandomForestVisual\\Bio\\bio_tree' + str(i) + '.png')
-    replicated_model, rep_acc = modeling(replicated_biomarker_data)
-    for i in range(len(replicated_model.classifier.estimators_)):
-        dem_model_tree = export_graphviz(replicated_model.classifier.estimators_[i], out_file='tree.dot',
-                                         feature_names=replicated_biomarker_data.columns.to_numpy()[:np.shape(rep)[1] - 1],
-                                         class_names=['0', '1'],
-                                         rounded=True, proportion=False,
-                                         precision=2, filled=True)
-        os.system('dot -Tpng .\\tree.dot -o  .\\RandomForestVisual\\Replicated\\replicated_tree' + str(i) + '.png')
-    Y_pred = dem_model.predict(X_dem_bio_test)
-    print(dem_acc)
-    print(accuracy_score(y_dem_bio_test, Y_pred))
-    accuracy(y_dem_bio_test, Y_pred)
-    Y_pred = bio_model.predict(X_bio_test)
-    print(bio_acc)
-    print(accuracy_score(y_bio_test, Y_pred))
-    accuracy(y_bio_test, Y_pred)
-    Y_pred = replicated_model.predict(X_rep_test)
-    print(rep_acc)
-    print(accuracy_score(y_rep_test, Y_pred))
-    accuracy(y_rep_test, Y_pred)
+    data = list(read_data())
+    dem_bio_data, biomarker_data, replicated_biomarker_data, colorectum_data = read_data()
+    folders = list(['BioAndDemo', 'Bio', 'Replicated', 'Colorectum'])
+    titles = list(['dem_tree', 'bio_tree', 'rep_tree', 'colorectum_tree'])
+    for (data_set, folder, title) in zip(data, folders, titles):
+        data_numpy = data_set.to_numpy()
+        num_col = np.shape(data_numpy)[1]
+        X_dev = data_numpy[:, :num_col - 1]
+        y_dev = data_numpy[:, num_col - 1]
+        X_test = X_dev[-100:]
+        y_test = y_dev[-100:]
+        model, acc = modeling(data_set)
+        createTreePNG(model, data_set, data_numpy, folder, title)
+        Y_pred = model.predict(X_test)
+        print(acc)
+        print(accuracy_score(y_test, Y_pred))
+        X_dev = X_dev[:-100]
+        y_dev = y_dev[:-100]
+        y_pred_probs = model.classifier.predict_proba(X_dev)
+        roc_auc_score = utils.plot_roc(y_pred_probs[:, 1], y_dev, 'Random Forest', folder,
+                                       './graphs/rf_roc')
+        print("ROC, AUC score: ", roc_auc_score)
+        false_pos = accuracy(y_test, Y_pred)
+        # for val in false_pos:
+        #     print(val)
+        #     printTree(X_test[val], model.classifier)
+    # dem_bio = dem_bio_data.to_numpy()
+    # num_col = np.shape(dem_bio)[1]
+    # X_dem_bio = dem_bio[:, :num_col - 1]
+    # y_dem_bio = dem_bio[:, num_col - 1]
+    # X_dem_bio_test = X_dem_bio[-100:]
+    # y_dem_bio_test = y_dem_bio[-100:]
+    # bio = biomarker_data.to_numpy()
+    # num_col = np.shape(bio)[1]
+    # X_bio = bio[:, :num_col - 1]
+    # y_bio = bio[:, num_col - 1]
+    # X_bio_test = X_bio[-100:]
+    # y_bio_test = y_bio[-100:]
+    # rep = replicated_biomarker_data.to_numpy()
+    # num_col = np.shape(rep)[1]
+    # X_rep = rep[:, :num_col - 1]
+    # y_rep = rep[:, num_col - 1]
+    # X_rep_test = X_rep[-100:]
+    # y_rep_test = y_rep[-100:]
+    # print(np.shape(y_dem_bio_test))
+    # dem_model, dem_acc = modeling(dem_bio_data)
+    # createTreePNG(dem_model, dem_bio_data, dem_bio, 'BioAndDemo', 'dem_tree')
+    # Y_pred = dem_model.predict(X_dem_bio_test)
+    # print(dem_acc)
+    # print(accuracy_score(y_dem_bio_test, Y_pred))
+    # dem_false_pos = accuracy(y_dem_bio_test, Y_pred)
+    # for val in dem_false_pos:
+    #     print(val)
+    #     printTree(X_dem_bio_test[val], dem_model.classifier)
+    # bio_model, bio_acc = modeling(biomarker_data)
+    # createTreePNG(bio_model, biomarker_data, bio, 'Bio', 'bio_tree')
+    # Y_pred = bio_model.predict(X_bio_test)
+    # print(bio_acc)
+    # print(accuracy_score(y_bio_test, Y_pred))
+    # bio_false_positive = accuracy(y_bio_test, Y_pred)
+    # for val in bio_false_positive:
+    #     print(val)
+    #     printTree(X_bio_test[val], bio_model.classifier)
+    # replicated_model, rep_acc = modeling(replicated_biomarker_data)
+    # createTreePNG(replicated_model, replicated_biomarker_data, rep, 'Replicated', 'replicated_tree')
+    # Y_pred = replicated_model.predict(X_rep_test)
+    # print(rep_acc)
+    # print(accuracy_score(y_rep_test, Y_pred))
+    # rep_false_positive = accuracy(y_rep_test, Y_pred)
+    # for val in rep_false_positive:
+    #     print(val)
+    #     printTree(X_rep_test[val], replicated_model.classifier)
     # print(dem_res)
     # print(bio_res)
     # print(replicated_res)

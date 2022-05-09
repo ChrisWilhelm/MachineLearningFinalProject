@@ -173,6 +173,7 @@ def main():
     print(accuracy_score(y_dem_bio_test, Y_pred))
     dem_false_pos = accuracy(y_dem_bio_test, Y_pred)
     for val in dem_false_pos:
+        print(val)
         printTree(X_dem_bio_test[val], dem_model.classifier)
     bio_model, bio_acc = modeling(biomarker_data)
     createTreePNG(bio_model, biomarker_data, bio, 'Bio', 'bio_tree')
@@ -181,6 +182,7 @@ def main():
     print(accuracy_score(y_bio_test, Y_pred))
     bio_false_positive = accuracy(y_bio_test, Y_pred)
     for val in bio_false_positive:
+        print(val)
         printTree(X_bio_test[val], bio_model.classifier)
     replicated_model, rep_acc = modeling(replicated_biomarker_data)
     createTreePNG(replicated_model, replicated_biomarker_data, rep, 'Replicated', 'replicated_tree')
@@ -189,6 +191,7 @@ def main():
     print(accuracy_score(y_rep_test, Y_pred))
     rep_false_positive = accuracy(y_rep_test, Y_pred)
     for val in rep_false_positive:
+        print(val)
         printTree(X_rep_test[val], replicated_model.classifier)
     # print(dem_res)
     # print(bio_res)

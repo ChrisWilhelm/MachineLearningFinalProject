@@ -66,8 +66,6 @@ def train_epoch(model, opt, criterion, X, Y, epochs=4000, batch_size=50):
             # (4) update weights
             opt.step()
             losses.append(loss.data.numpy())
-		# if i%100 == 0:
-        # print("Epoch: ", i, "- ",loss.data.numpy())
     return model
 
 
@@ -129,7 +127,7 @@ def run_testdata(model, X, y, dataset_type):
     y_hat = np.array(y_hat)
     accuracy, specificity, sensitivity = utils.acc_spec_sens(y_hat, y_test)
     print("Accuracy = ", accuracy, ", Specificity = ", specificity, ", Sensitivity = ", sensitivity)
-    analyze_cancer_type(y_hat, y_test, sample_ids)
+    utils.analyze_cancer_type(y_hat, y_test, sample_ids, "Neural Network", dataset_type)
 
 
 if __name__ == "__main__":
@@ -144,15 +142,3 @@ if __name__ == "__main__":
     run_testdata(model, X_test, y_test, 'Biomarker')
     model, X_test, y_test = run_network(replicated_biomarker_data, LR, EPOCHS, NUM_HIDDEN_LAYERS, 'Replicated')
     run_testdata(model, X_test, y_test, 'Replicated')
-"""
-
-
-entire_dataset = pd.read_csv('dataset/Consolidated_CancerSEEK_Data.csv')
-for i in range(entire_dataset.shape[0]):
-    sample = entire_dataset.iloc[i, 1]
-    ct = get_cancer_type(sample, entire_dataset)
-    print(ct)
-
-
-
-"""

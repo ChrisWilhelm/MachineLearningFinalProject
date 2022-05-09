@@ -46,7 +46,42 @@ def read_data():
            train_test_dev_split(replicated_biomarker_data)
 
 
-def analyze_cancer_type(ypred, ytest, sample_ids):
+def confusion_matrix(true, preds):
+    cf = np.zeros((2, 2))
+    for i in range(len(true)):
+        tval = true[i]
+        pval = preds[i]
+        if tval == 0: # true negative
+            if tval == pval:
+                cf[0, 0] += 1
+            else:
+                cf[0, 1] += 1
+        else: # true positive
+            if tval == pval:
+                cf[1, 1] += 1
+            else:
+                cf[1, 0] += 1
+    return cf
+
+
+def plot_confusion_matrix(true, preds, model_type, classification, dataset_type):
+    plt.clf()
+    cf_matrix = confusion_matrix(true, preds)
+    # plotting confusion matrix
+    group_names = ['True Negative', 'False Positive', 'False Negative', 'True Positive']
+    group_counts = ["{0:0.0f}".format(value) for value in cf_matrix.flatten()]
+    group_percentages = ["{0:.2%}".format(value) for value in cf_matrix.flatten() / np.sum(cf_matrix)]
+    labels = [f"{v1}\n{v2}\n{v3}" for v1, v2, v3 in zip(group_names, group_counts, group_percentages)]
+    labels = np.asarray(labels).reshape(2, 2)
+    ax = plt.axes()
+    sns.heatmap(cf_matrix, annot=labels, fmt='', cmap='Blues', ax=ax)
+    axis_title = classification + ', Model ' + model_type + ', Data ' + dataset_type
+    ax.set_title(axis_title)
+    fname = './graphs/' + model_type + '_cfmatrix_' + classification + '_dataset_' + dataset_type
+    plt.savefig(fname)
+
+
+def analyze_cancer_type(ypred, ytest, sample_ids, model_type, dataset_type):
     assert len(ypred) == len(ytest) == len(sample_ids)
     dataset = pd.read_csv('dataset/Consolidated_CancerSEEK_Data.csv')
     # for each cancer type, there are two arrays for negative and positive classifications for y_hat
@@ -75,10 +110,10 @@ def analyze_cancer_type(ypred, ytest, sample_ids):
         elif cancer_type == 'Normal':
             # true negative classification
             if y_hat == y_test:
-                normal.append(1)
+                normal.append(0)
             # false positive classification
             else:
-                normal.append(0)
+                normal.append(1)
         elif cancer_type == 'Lung':
             # true positive classification
             if y_hat == y_test:
@@ -130,24 +165,24 @@ def analyze_cancer_type(ypred, ytest, sample_ids):
                 pancreas.append(0)
         else:
             print("Erroneous Sample Number")
-    print("Normal")
-    print(normal)
-    print("Colorectum")
-    print(colorectum)
-    print("Stomach")
-    print(stomach)
-    print("Liver")
-    print(liver)
-    print("Esophagus")
-    print(esophagus)
-    print("Ovary")
-    print(ovary)
-    print("Pancreas")
-    print(pancreas)
-    print("Breast")
-    print(breast)
-    print("Lung")
-    print(lung)
+    true_normal = np.zeros(len(normal))
+    plot_confusion_matrix(true_normal, normal, model_type, 'Normal', dataset_type)
+    true_colorectum = np.ones(len(colorectum))
+    plot_confusion_matrix(true_colorectum, colorectum, model_type, 'Colorectum', dataset_type)
+    true_stomach = np.ones(len(stomach))
+    plot_confusion_matrix(true_stomach, stomach, model_type, 'Stomach', dataset_type)
+    true_liver = np.ones(len(liver))
+    plot_confusion_matrix(true_liver, liver, model_type, 'Liver', dataset_type)
+    true_esophagus = np.ones(len(esophagus))
+    plot_confusion_matrix(true_esophagus, esophagus, model_type, 'Esophagus', dataset_type)
+    true_ovary = np.ones(len(ovary))
+    plot_confusion_matrix(true_ovary, ovary, model_type, 'Ovary', dataset_type)
+    true_pancreas = np.ones(len(pancreas))
+    plot_confusion_matrix(true_pancreas, pancreas, model_type, 'Pancreas', dataset_type)
+    true_breast = np.ones(len(breast))
+    plot_confusion_matrix(true_breast, breast, model_type, 'Breast', dataset_type)
+    true_lung = np.ones(len(lung))
+    plot_confusion_matrix(true_lung, lung, model_type, 'Lung', dataset_type)
 
 
 def train_test_dev_split_cancer(dataset, dev_percentage=0.2):

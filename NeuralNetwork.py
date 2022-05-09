@@ -1,4 +1,3 @@
-import inline as inline
 import matplotlib
 import torch
 import torch.nn as nn

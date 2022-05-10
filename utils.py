@@ -197,6 +197,16 @@ def train_test_dev_split_cancer(dataset, dev_percentage=0.2):
     return X_train, X_dev, X_test, y_train, y_dev, y_test
 
 
+def read_colorectum_data():
+    sample_data = pd.read_csv('dataset/Consolidated_CancerSEEK_Data.csv')
+    colorectum_starter = sample_data[sample_data["Tumor type"].isin(["Colorectum", "Normal"])]
+    colorectum_final = colorectum_starter.drop(["Patient ID #", "Sample ID #", "Tumor type", "Race",
+                                                "AJCC Stage", "CancerSEEK Logistic Regression Score",
+                                                "CancerSEEK Test Result"], axis=1)
+    colorectum_final = colorectum_final.sample(frac=1, random_state=553)
+    return colorectum_final
+
+
 def read_data_cancertype():
     sample_data = pd.read_csv('dataset/Consolidated_CancerSEEK_Data.csv')
     cols = ['Patient ID #', 'Age', 'Sex', 'Race', 'Tumor type', 'AJCC Stage', 'Ω score', 'AFP (pg/ml)', \
@@ -243,23 +253,13 @@ def visualize_data(df):
 
 # plots the roc curve and returns the roc auc score
 def plot_roc(y_pred_probs, y_actual, model_type, dataset_type, fname):
+    plt.clf()
     y_pred_fpr, y_pred_tpr, _ = roc_curve(y_actual, y_pred_probs)
     plt.plot(y_pred_fpr, y_pred_tpr, label=dataset_type)
     plt.title(model_type + ' ROC Curve')
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
     plt.legend()
+    fname = fname + '_' + dataset_type
     plt.savefig(fname)
-
     return roc_auc_score(y_actual, y_pred_probs)
-
-
-"""
-demographic_biomarker_data, biomarker_data, replicated_biomarker_data = read_data_cancertype()
-X_train, X_dev, X_test, y_train, y_dev, y_test = demographic_biomarker_data
-print(y_dev.astype(np.float32))
-
-demographic_biomarker_data, biomarker_data, replicated_biomarker_data = read_data()
-X_train, X_dev, X_test, y_train, y_dev, y_test = demographic_biomarker_data
-print(y_dev)
-"""

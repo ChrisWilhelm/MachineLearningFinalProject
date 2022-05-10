@@ -9,6 +9,7 @@ import torch.optim as optim
 import numpy as np
 import utils
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 class Net(nn.Module):
@@ -42,7 +43,7 @@ def predict(model, data):
     return np.array(preds)
 
 
-def train_epoch(model, opt, criterion, X, Y, epochs=4000, batch_size=50):
+def train_epoch(model, opt, criterion, X, Y, dataset_type, epochs=4000, batch_size=50):
     model.train()
     losses = []
     X = X.astype(np.float32)
@@ -55,7 +56,6 @@ def train_epoch(model, opt, criterion, X, Y, epochs=4000, batch_size=50):
             y_batch = Y[beg_i:beg_i + batch_size, :]
             x_batch = Variable(x_batch)
             y_batch = Variable(y_batch)
-
             opt.zero_grad()
             # (1) Forward
             y_hat = model(x_batch)
@@ -65,7 +65,18 @@ def train_epoch(model, opt, criterion, X, Y, epochs=4000, batch_size=50):
             loss.backward()
             # (4) update weights
             opt.step()
-            losses.append(loss.data.numpy())
+            loss = loss.data.numpy()
+            losses.append(loss)
+    #plotting training loss
+    plt.clf()
+    losses = np.array(losses)
+    plt.plot(range(len(losses)), losses, label=dataset_type)
+    plt.title('Neural Network Model Loss: ' + dataset_type)
+    plt.xlabel('Iterations')
+    plt.ylabel('Loss')
+    plt.legend()
+    fname = './graphs/nn_loss_train_' + dataset_type
+    plt.savefig(fname)
     return model
 
 
@@ -83,21 +94,21 @@ def run_network(dataset, learning_rate, epochs, hidden_layer, dataset_type):
     X_test = combined[X_train.shape[0] + X_dev.shape[0]:X_train.shape[0] + X_dev.shape[0] + X_test.shape[0]]
 
     y_train = y_train[:, None]
-
+    losses_total = []
     net = Net(X_train.shape[1], hidden_layer)
-    opt = optim.Adam(net.parameters(), learning_rate, betas=(0.9, 0.999))
+    opt = optim.SGD(net.parameters(), learning_rate)
     criterion = nn.BCELoss()
-    model = train_epoch(net, opt, criterion, X_train, y_train, epochs)
+    model = train_epoch(net, opt, criterion, X_train, y_train, dataset_type, epochs)
 
     # predictions
     output = predict(model, X_dev)
     y_dev = y_dev.astype(np.float32)
-    roc_auc_score = utils.plot_roc(output, y_dev, 'Neural Net', dataset_type, './graphs/nn_roc')
+    roc_auc_score = utils.plot_roc(output, y_dev, 'Neural Net', dataset_type, './graphs/nn_roc_dev')
     print("Dataset: ", dataset_type)
     print("ROC, AUC score: ", roc_auc_score)
     y_hat_rint = np.rint(output)
     y_hat = []
-    cutoff = .99999
+    cutoff = .75
     for i in range(len(output)):
         if output[i] >= cutoff:
             y_hat.append(1)
@@ -115,10 +126,10 @@ def run_testdata(model, X, y, dataset_type):
     output = predict(model, X)
     y_test = y[:, 1].astype(np.float32)
     sample_ids = y[:, 0]
-    roc_auc_score = utils.plot_roc(output, y_test, 'Neural Net', dataset_type, './graphs/nn_roc')
+    roc_auc_score = utils.plot_roc(output, y_test, 'Neural Net', dataset_type, './graphs/nn_roc_test')
     print("ROC, AUC score: ", roc_auc_score)
     y_hat = []
-    cutoff = .99999
+    cutoff = .75
     for i in range(len(output)):
         if output[i] >= cutoff:
             y_hat.append(1)
@@ -128,6 +139,25 @@ def run_testdata(model, X, y, dataset_type):
     accuracy, specificity, sensitivity = utils.acc_spec_sens(y_hat, y_test)
     print("Accuracy = ", accuracy, ", Specificity = ", specificity, ", Sensitivity = ", sensitivity)
     utils.analyze_cancer_type(y_hat, y_test, sample_ids, "Neural Network", dataset_type)
+
+
+def run_colorectum_testdata(model, X, y):
+    print("TEST DATA: Dataset ", dataset_type)
+    # predictions
+    output = predict(model, X)
+    y_test = y.astype(np.float32)
+    roc_auc_score = utils.plot_roc(output, y_test, 'Neural Net', dataset_type, './graphs/nn_roc_test')
+    print("ROC, AUC score: ", roc_auc_score)
+    y_hat = []
+    cutoff = .75
+    for i in range(len(output)):
+        if output[i] >= cutoff:
+            y_hat.append(1)
+        else:
+            y_hat.append(0)
+    y_hat = np.array(y_hat)
+    accuracy, specificity, sensitivity = utils.acc_spec_sens(y_hat, y_test)
+    print("Accuracy = ", accuracy, ", Specificity = ", specificity, ", Sensitivity = ", sensitivity)
 
 
 if __name__ == "__main__":
@@ -142,3 +172,7 @@ if __name__ == "__main__":
     run_testdata(model, X_test, y_test, 'Biomarker')
     model, X_test, y_test = run_network(replicated_biomarker_data, LR, EPOCHS, NUM_HIDDEN_LAYERS, 'Replicated')
     run_testdata(model, X_test, y_test, 'Replicated')
+    colorectum_data = utils.read_colorectum_data()
+    model, X_test, y_test = run_network(demographic_biomarker_data, LR, EPOCHS, NUM_HIDDEN_LAYERS,
+                                        'Colorectum')
+    run_testdata(model, X_test, y_test, 'Colorectum')

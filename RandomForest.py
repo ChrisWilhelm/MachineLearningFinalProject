@@ -172,6 +172,7 @@ def main():
         roc_auc_score = utils.plot_roc(y_pred_probs[:, 1], y_dev, 'Random Forest', folder,
                                        './graphs/rf_roc')
         print("ROC, AUC score: ", roc_auc_score)
+        roc_auc_score_test = utils.plot_roc(Y_pred, y_test, 'Random Forest Test', folder, './graphs/rf_roc_test')
         false_pos = accuracy(y_test, Y_pred)
         #utils.analyze_cancer_type(Y_pred, y_test, patient_Id_arr, 'Random Forest', folder)
         # for val in false_pos:

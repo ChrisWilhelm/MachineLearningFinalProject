@@ -68,14 +68,9 @@ if __name__ == "__main__":
 	colorectum_model = logistic_regression_train(colorectum_data, 'Colorectum')
 	plt.figure()
 
-	print(demographic_biomarker_data)
-	print(colorectum_data)
 	biomarker_score_test = logistic_regression_test(biomarker_data, 'Biomarker', biomarker_model)
-	print('hello')
 	replicated_score = logistic_regression_test(replicated_biomarker_data, 'Replicated', replicated_model)
-	print('world')
 	demographic_biomarker_data_score = logistic_regression_test(demographic_biomarker_data, 'Demographic Biomarker', demographic_biomarker_model)
-	colorectum_data_score = logistic_regression_test(colorectum_data, 'Colorectum', colorectum_model)
 
 
 	# print(biomarker_score)

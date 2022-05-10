@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 import numpy as np
 import utils
-from ReadData import read_data
+from ReadData import read_data2
 
 def logistic_regression_train(dataset, dataset_type):
 	X_train, X_dev, _, y_train, y_dev, _ = dataset
@@ -38,7 +38,7 @@ def logistic_regression_test(dataset, dataset_type, lr_model):
 	# print(accuracy, specificity, sensitivity)
 
 if __name__ == "__main__":
-	demographic_biomarker_data, biomarker_data, replicated_biomarker_data, colorectum_data = read_data()
+	demographic_biomarker_data, biomarker_data, replicated_biomarker_data, colorectum_data = read_data2()
 	biomarker_model = logistic_regression_train(biomarker_data, 'Biomarker')
 	replicated_model = logistic_regression_train(replicated_biomarker_data, 'Replicated')
 	demographic_biomarker_model = logistic_regression_train(demographic_biomarker_data, 'Demographic Biomarker')

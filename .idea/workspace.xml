@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="23ab22d2-c456-4671-bd24-05e84d6a80ed" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Final_Project_Submission_Template.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Final_Project_Submission_Template.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RandomForestVisual/RandomForests_Interpreted.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/RandomForestVisual/RandomForests_Interpreted.ipynb" afterDir="false" />
-    </list>
+    <list default="true" id="23ab22d2-c456-4671-bd24-05e84d6a80ed" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -182,7 +179,7 @@
       <updated>1650910740325</updated>
       <workItem from="1652104658521" duration="2024000" />
       <workItem from="1652127847363" duration="2535000" />
-      <workItem from="1652145711045" duration="360000" />
+      <workItem from="1652145711045" duration="600000" />
     </task>
     <servers />
   </component>

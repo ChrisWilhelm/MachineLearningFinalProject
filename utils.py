@@ -14,9 +14,9 @@ from sklearn.metrics import roc_auc_score
 def train_test_dev_split(dataset, dev_percentage=0.2):
     assert 0.0 <= dev_percentage <= 1.0
     dataset = dataset.to_numpy()
-    X_train, X_dev, y_train, y_dev = train_test_split(dataset[:-100, :-1], dataset[:-100, -1], test_size=dev_percentage)
-    X_test = dataset[-100:, :-1]
-    y_test = dataset[-100:, -1]
+    X_train, X_dev, y_train, y_dev = train_test_split(dataset[:-200, :-1], dataset[:-200, -1], test_size=dev_percentage)
+    X_test = dataset[-200:, :-1]
+    y_test = dataset[-200:, -1]
 
     return X_train, X_dev, X_test, y_train, y_dev, y_test
 
@@ -189,10 +189,10 @@ def train_test_dev_split_cancer(dataset, dev_percentage=0.2):
     assert 0.0 <= dev_percentage <= 1.0
     dataset = dataset.to_numpy()
     col_length = dataset.shape[1]
-    X_train, X_dev, y_train, y_dev = train_test_split(dataset[:-100, 0:col_length - 2], dataset[:-100, -1], \
+    X_train, X_dev, y_train, y_dev = train_test_split(dataset[:-200, 0:col_length - 2], dataset[:-200, -1], \
                                      test_size=dev_percentage)
-    X_test = dataset[-100:, :col_length - 2]
-    y_test = dataset[-100:, -2:]
+    X_test = dataset[-200:, :col_length - 2]
+    y_test = dataset[-200:, -2:]
 
     return X_train, X_dev, X_test, y_train, y_dev, y_test
 

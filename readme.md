@@ -4,6 +4,6 @@ Early cancer diagnosis and treatment can drastically alter the outcome of the di
 Our goal is to improve the prediction algorithms by building our own models. We will use an optimized subset of data from the dataset (additional protein levels, individual characteristics) and compare various classification methods (logistic regression, neural networks, random forests).
 
 **To run our code:**
-Make sure to run `conda install -c conda-forge python-graphviz` and 'pip install -r requirements.txt' to install relevant packagaes
+Make sure to run `conda install -c conda-forge python-graphviz` and `pip install -r requirements.txt` to install relevant packagaes
 
 Put 'python ./filename' to run any individual file
